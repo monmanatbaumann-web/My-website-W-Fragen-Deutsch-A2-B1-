@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DTZ / Telc A2-B1: W-Fragen - Deutsch mit Monmanat</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f4f8; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; position: relative; padding-bottom: 60px; }
+        .container { background: white; max-width: 850px; width: 100%; border-radius: 12px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap; }
+        button { background-color: #0284c7; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; }
+        button:hover { background-color: #0369a1; }
+        
+        .timer-group { display: flex; align-items: center; gap: 6px; }
+        .timer-btn { background-color: #eab308; color: #0f172a; }
+        .timer-btn:hover { background-color: #ca8a04; }
+        .timer-select { padding: 9px; border-radius: 6px; border: 1px solid #ccc; font-weight: bold; font-size: 14px; }
+        
+        .card-count { font-weight: bold; color: #475569; }
+        .card { border: 2px solid #e2e8f0; border-radius: 10px; padding: 20px; background-color: #fff; position: relative; }
+        
+        .badge-container { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .exam-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background-color: #dc2626; color: white; }
+        .type-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        
+        .thai-sentence-box { background: #fef3c7; border: 2px solid #fde68a; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; color: #92400e; margin-bottom: 15px; line-height: 1.4; }
+        
+        .builder-section { margin-bottom: 20px; }
+        .section-label { font-size: 14px; font-weight: bold; color: #475569; margin-bottom: 8px; }
+        .user-sentence-box { min-height: 60px; background-color: #f8fafc; border: 2px dashed #94a3b8; border-radius: 8px; padding: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+        .words-bank { min-height: 60px; background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        
+        .word-chip { background-color: #0284c7; color: white; padding: 8px 14px; border-radius: 20px; font-weight: 600; font-size: 15px; cursor: pointer; user-select: none; transition: transform 0.1s, background-color 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .word-chip:hover { background-color: #0369a1; transform: translateY(-2px); }
+        .word-chip.used { background-color: #94a3b8; opacity: 0.4; cursor: default; transform: none; box-shadow: none; }
+        
+        .check-btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-check { background-color: #16a34a; }
+        .btn-check:hover { background-color: #15803d; }
+        .btn-reset { background-color: #64748b; }
+        .btn-reset:hover { background-color: #475569; }
+
+        .feedback-text { font-weight: bold; font-size: 16px; margin-top: 10px; min-height: 24px; }
+        .feedback-success { color: #16a34a; }
+        .feedback-error { color: #dc2626; }
+
+        .vocab-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; margin-top: 15px; }
+        .vocab-title { font-weight: bold; color: #166534; margin-bottom: 5px; }
+
+        .response-box { background: #fff7ed; border: 1px solid #ffedd5; padding: 12px 15px; border-radius: 8px; font-size: 14px; color: #9a3412; margin-bottom: 15px; }
+        .response-title { font-weight: bold; color: #c2410c; margin-bottom: 5px; }
+
+        .action-btns { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .answer-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; display: none; margin-top: 15px; }
+        .timer-display { font-size: 18px; font-weight: bold; color: #dc2626; }
+        .watermark { position: fixed; bottom: 12px; right: 18px; font-size: 14px; font-weight: bold; color: rgba(0, 0, 0, 0.35); pointer-events: none; z-index: 1000; }
+        .audio-btn { background-color: #0891b2; margin-top: 10px; }
+        .audio-btn:hover { background-color: #0e7490; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="controls">
+        <button onclick="drawCard()" id="drawBtn">🎴 จับการ์ด/สับไพ่ (ไม่ซ้ำ)</button>
+        
+        <div class="timer-group">
+            <select id="timerSelect" class="timer-select">
+                <option value="60">1 นาที (60 วิ)</option>
+                <option value="120">2 นาที (120 วิ)</option>
+            </select>
+            <button class="timer-btn" onclick="startTimer()">⏱️ จับเวลา</button>
+        </div>
+        
+        <span class="timer-display" id="timerText"></span>
+        <span class="card-count" id="cardCounter">การ์ดคงเหลือ: 50/50</span>
+    </div>
+
+    <div class="card" id="cardArea">
+        <div class="badge-container">
+            <span class="exam-badge">🎯 DTZ / Telc A2-B1</span>
+            <span class="type-badge" id="topicBadge">📌 Thema</span>
+        </div>
+        
+        <div class="thai-sentence-box" id="thaiSentence">
+            🇹🇭 ประโยคคำถามภาษาไทย
+        </div>
+
+        <div class="builder-section">
+            <div class="section-label">👇 คลิกคำศัพท์เพื่อเรียงประโยคคำถาม (W-Frage) ให้ถูกต้อง:</div>
+            <div class="user-sentence-box" id="userSentenceBox"></div>
+            
+            <div class="section-label">🧩 คำศัพท์ที่มีให้เลือก (สุ่มสลับลำดับ):</div>
+            <div class="words-bank" id="wordsBank"></div>
+
+            <div class="check-btn-group">
+                <button class="btn-check" onclick="checkBuiltSentence()">✔️ ตรวจคำตอบ</button>
+                <button class="btn-reset" onclick="resetWordBuilding()">🔄 รีเซ็ตคำศัพท์</button>
+            </div>
+            <div class="feedback-text" id="feedbackText"></div>
+        </div>
+
+        <div class="vocab-box">
+            <div class="vocab-title">💡 คำศัพท์ตัวช่วยแปล (Hilfswortschatz):</div>
+            <div id="vocabList">-</div>
+        </div>
+
+        <div class="response-box">
+            <div class="response-title">🗣️ ตัวช่วยสำหรับให้นักเรียนฝึกตอบทันที (Antwort-Hilfe):</div>
+            <div id="responseHint">-</div>
+        </div>
+
+        <div class="action-btns">
+            <button onclick="toggleAnswer()" id="toggleAnsBtn">👁️ เฉลย / คำแปลภาษาเยอรมัน</button>
+        </div>
+        
+        <div class="answer-box" id="answerArea">
+            <strong style="color: #0369a1; font-size: 15px;">เฉลยประโยคคำถามสมบูรณ์ (Musterfrage):</strong>
+            <p id="fullSentence" style="margin: 10px 0; font-weight: bold; color: #0f172a; font-size: 18px; line-height: 1.5;"></p>
+            <p id="grammarRule" style="margin: 6px 0; font-size: 14px; color: #0369a1; font-weight: 500;"></p>
+            <button class="audio-btn" onclick="speakText()">🔊 กดเปิดฟังเสียงอ่านเฉลย</button>
+        </div>
+    </div>
+</div>
+
+<div class="watermark">Deutsch mit Monmanat</div>
+
+<script>
+// คลังข้อมูล 50 W-Fragen ที่พบบ่อยที่สุดในข้อสอบ DTZ / Telc A2-B1
+const cardsData = [
+    {
+        topic: "Teil 1: Person vorstellen",
+        thai: "คุณอาศัยอยู่ในเยอรมนีมานานแค่ไหนแล้วคะ/ครับ?",
+        words: ["Seit", "wann", "leben", "Sie", "in", "Deutschland?"],
+        full: "Seit wann leben Sie in Deutschland?",
+        rule: "📌 Seit wann + Verb (leben) + Subject (Sie) + Prep. Phrase",
+        vocab: "seit wann (ตั้งแตเมื่อไหร่/นานเท่าไหร่), leben (อาศัยอยู่)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich lebe seit... (z.B. seit zwei Jahren / seit 2022) in Deutschland."
+    },
+    {
+        topic: "Teil 1: Person vorstellen",
+        thai: "เหตุผลอะไรที่คุณตัดสินใจมาเรียนภาษาเยอรมันคะ/ครับ?",
+        words: ["Warum", "lernen", "Sie", "die", "deutsche", "Sprache?"],
+        full: "Warum lernen Sie die deutsche Sprache?",
+        rule: "📌 Warum (ทำไม) + Verb อยู่ตำแหน่งที่ 2",
+        vocab: "warum (ทำไม), die deutsche Sprache (ภาษาเยอรมัน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich lerne Deutsch, weil ich eine Arbeit finden möchte / hier leben will."
+    },
+    {
+        topic: "Teil 1: Person vorstellen",
+        thai: "คุณทำอาชีพอะไรในประเทศบ้านเกิดของคุณมาก่อนคะ/ครับ?",
+        words: ["Was", "haben", "Sie", "in", "Irem", "Heimatland", "gearbeitet?"],
+        full: "Was haben Sie in Ihrem Heimatland gearbeitet?",
+        rule: "📌 Perfekt: Was + haben + Sie + in Ihrem Heimatland + gearbeitet",
+        vocab: "das Heimatland (ประเทศบ้านเกิด), arbeiten (ทำงาน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: In meinem Heimatland habe ich als... (z.B. Lehrerin / Ingenieur) gearbeitet."
+    },
+    {
+        topic: "Teil 2: Bildbeschreibung",
+        thai: "คุณเห็นอะไรในภาพนี้บ้างคะ/ครับ?",
+        words: ["Was", "können", "Sie", "auf", "diesen", "Foto", "sehen?"],
+        full: "Was können Sie auf diesem Foto sehen?",
+        rule: "📌 Modalverb (können) อยู่ตำแหน่งที่ 2 และกริยาแท้ (sehen) อยู่ท้ายสุด",
+        vocab: "das Foto (รูปภาพ), sehen (มองเห็น)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Auf dem Foto sehe ich... / Im Vordergrund gibt es..."
+    },
+    {
+        topic: "Teil 2: Bildbeschreibung",
+        thai: "คุณคิดว่าคนในภาพกำลังรู้สึกอย่างไร?",
+        words: ["Wie", "fühlen", "sich", "die", "Personen", "auf", "dem", "Bild?"],
+        full: "Wie fühlen sich die Personen auf dem Bild?",
+        rule: "📌 Reflexivverb: Wie + fühlen + sich + Subject",
+        vocab: "sich fühlen (รู้สึก), die Personen (ผู้คน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich glaube, sie sind glücklich / gestresst, weil..."
+    },
+    {
+        topic: "Teil 3: Gemeinsam etwas planen",
+        thai: "พวกเราจะนัดพบกันวันไหนและกี่โมงดีคะ/ครับ?",
+        words: ["An", "welchem", "Tag", "und", "um", "wie", "viel", "Uhr", "treffen", "wir", "uns?"],
+        full: "An welchem Tag und um wie viel Uhr treffen wir uns?",
+        rule: "📌 กลุ่มคำถามประธานซ้อน + treffen (Verb) + wir + uns (Reflexivpronomen)",
+        vocab: "an welchem Tag (วันไหน), sich treffen (นัดเจอกัน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Wir könnten uns am Samstag um 14 Uhr treffen. Passt das?"
+    },
+    {
+        topic: "Teil 3: Gemeinsam etwas planen",
+        thai: "เราต้องเตรียมอะไรบ้างสำหรับงานเลี้ยงครั้งนี้?",
+        words: ["Was", "müssen", "wir", "für", "die", "Party", "vorbereiten?"],
+        full: "Was müssen wir für die Party vorbereiten?",
+        rule: "📌 müssen + Infinitiv (vorbereiten) อยู่ท้ายประโยค",
+        vocab: "vorbereiten (ตระเตรียม), die Party (งานเลี้ยง)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Wir müssen Getränke kaufen und Essen kochen."
+    },
+    {
+        topic: "Teil 3: Gemeinsam etwas planen",
+        thai: "เราจะเดินทางไปที่นั่นอย่างไรดีคะ/ครับ?",
+        words: ["Wie", "kommen", "wir", "am", "besten", "dorthin?"],
+        full: "Wie kommen wir am besten dorthin?",
+        rule: "📌 Wie + kommen (Verb) + wir + am besten + dorthin",
+        vocab: "am besten (ดีที่สุด), dorthin (ไปที่นั่น)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Wir können mit dem Bus / mit dem Zug fahren."
+    },
+    {
+        topic: "Teil 3: Gemeinsam etwas planen",
+        thai: "ใครจะรับผิดชอบเรื่องการซื้อของขวัญคะ/ครับ?",
+        words: ["Wer", "übernimmt", "die", "Besorgung", "des", "Geschenks?"],
+        full: "Wer übernimmt die Besorgung des Geschenks?",
+        rule: "📌 Wer (ประธาน) + übernimmt (Verb) + Genitiv Noun (des Geschenks)",
+        vocab: "übernehmen (รับหน้าที่), das Geschenk (ของขวัญ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich kann das Geschenk kaufen. / Das kann ich machen!"
+    },
+    {
+        topic: "Teil 3: Gemeinsam etwas planen",
+        thai: "งบประมาณที่เรามีสำหรับกิจกรรมนี้คือเท่าไหร่คะ/ครับ?",
+        words: ["Wie", "viel", "Geld", "wollen", "wir", "dafür", "ausgeben?"],
+        full: "Wie viel Geld wollen wir dafür ausgeben?",
+        rule: "📌 Wie viel Geld + wollen (Modalverb) + wir + ausgeben (Infinitiv)",
+        vocab: "ausgeben (ใช้จ่ายเงิน), dafür (สำหรับสิ่งนี้)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich denke, 20 Euro pro Person sind genug."
+    },
+
+    // --- เพิ่มเติมข้อสอบ DTZ/Telc 40 ข้อ ---
+    {
+        topic: "Wohnen & Alltag",
+        thai: "ข้อดีและข้อเสียของการอาศัยอยู่ในเมืองใหญ่คืออะไร?",
+        words: ["Was", "sind", "die", "Vor-", "und", "Nachteile", "vom", "Leben", "in", "der", "Stadt?"],
+        full: "Was sind die Vor- und Nachteile vom Leben in der Stadt?",
+        rule: "📌 Was sind + Noun Plural (Vor- und Nachteile)",
+        vocab: "der Vorteil (ข้อดี), der Nachteil (ข้อเสีย)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ein Vorteil ist, dass... Aber ein Nachteil ist..."
+    },
+    {
+        topic: "Arbeit & Beruf",
+        thai: "คุณพอจะบอกฉันได้ไหมว่างานเดิมของคุณมีหน้าที่อะไรบ้าง?",
+        words: ["Welche", "Aufgaben", "hatten", "Sie", "in", "Ihrem", "früheren", "Job?"],
+        full: "Welche Aufgaben hatten Sie in Ihrem früheren Job?",
+        rule: "📌 Welche Aufgaben + hatten (Präteritum) + Sie",
+        vocab: "die Aufgabe (หน้าที่งาน), früher (ในอดีต/แต่ก่อน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich musste E-Mails schreiben und Kunden betreuen."
+    },
+    {
+        topic: "Gesundheit",
+        thai: "คุณทำอย่างไรบ้างเพื่อรักษาสุขภาพให้แข็งแรงอยู่เสมอ?",
+        words: ["Was", "tun", "Sie,", "um", "gesund", "zu", "bleiben?"],
+        full: "Was tun Sie, um gesund zu bleiben?",
+        rule: "📌 โครงสร้าง um... zu + Infinitiv (เพื่อที่จะ...)",
+        vocab: "tun (ทำ), gesund (สุขภาพดี), bleiben (คงอยู่)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich treibe regelmäßig Sport und esse viel Gemüse."
+    },
+    {
+        topic: "Medien & Internet",
+        thai: "คุณใช้อินเทอร์เน็ตวันละกี่ชั่วโมงคะ/ครับ?",
+        words: ["Wie", "viele", "Stunden", "pro", "Tag", "nutzen", "Sie", "das", "Internet?"],
+        full: "Wie viele Stunden pro Tag nutzen Sie das Internet?",
+        rule: "📌 Wie viele + Noun Plural (Stunden) + nutzen (Verb)",
+        vocab: "nutzen (ใช้งาน), pro Tag (ต่อวัน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich nutze das Internet etwa zwei bis drei Stunden am Tag."
+    },
+    {
+        topic: "Einkaufen & Konsum",
+        thai: "คุณชอบซื้อของออนไลน์หรือไปซื้อที่ร้านค้ามากกว่ากันคะ/ครับ?",
+        words: ["Warum", "kaufen", "Sie", "lieber", "online", "als", "im", "Geschäft", "ein?"],
+        full: "Warum kaufen Sie lieber online als im Geschäft ein?",
+        rule: "📌 einkaufen เป็นกริยาแยกส่วน / lieber... als (ชอบมากกว่า)",
+        vocab: "lieber (ชอบมากกว่า), das Geschäft (ร้านค้า)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich kaufe lieber online, weil es praktischer ist."
+    },
+    {
+        topic: "Mobilität & Reisen",
+        thai: "ยานพาหนะประเภทไหนที่คุณใช้บ่อยที่สุดในชีวิตประจำวัน?",
+        words: ["Welches", "Verkehrsmittel", "benutzen", "Sie", "am", "häufigsten?"],
+        full: "Welches Verkehrsmittel benutzen Sie am häufigsten?",
+        rule: "📌 Welche + neuter Noun (Verkehrsmittel) + benutzen + am häufigsten",
+        vocab: "das Verkehrsmittel (ยานพาหนะ), am häufigsten (บ่อยที่สุด)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich benutze am häufigsten die S-Bahn / das Auto."
+    },
+    {
+        topic: "Sprachkurs & Ausbildung",
+        thai: "ส่วนไหนของการเรียนภาษาเยอรมันที่ยากที่สุดสำหรับคุณ?",
+        words: ["Was", "ist", "für", "Sie", "am", "schwierigsten", "beim", "Deutschlernen?"],
+        full: "Was ist für Sie am schwierigsten beim Deutschlernen?",
+        rule: "📌 am + ขั้นสุด Adjective (schwierigsten)",
+        vocab: "schwierig (ยาก), beim Deutschlernen (ในการเรียนภาษาเยอรมัน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Für mich ist die Grammatik / das Sprechen am schwierigsten."
+    },
+    {
+        topic: "Freizeit & Hobbys",
+        thai: "คุณชอบทำกิจกรรมอะไรมากที่สุดในวันเสาร์-อาทิตย์?",
+        words: ["Was", "machen", "Sie", "am", "liebsten", "am", "Wochenende?"],
+        full: "Was machen Sie am liebsten am Wochenende?",
+        rule: "📌 am liebsten (ชอบที่สุด) / am Wochenende (ในวันหยุดเสาร์อาทิตย์)",
+        vocab: "am liebsten (ชอบทำที่สุด), das Wochenende (สุดสัปดาห์)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Am Wochenende treffe ich gerne Freunde oder ruhe mich aus."
+    },
+    {
+        topic: "Kinder & Familie",
+        thai: "ระบบการศึกษาในประเทศของคุณแตกต่างจากเยอรมนีอย่างไร?",
+        words: ["Wie", "unterscheidet", "sich", "das", "Schulsystem", "in", "Ihrem", "Land?"],
+        full: "Wie unterscheidet sich das Schulsystem in Ihrem Land?",
+        rule: "📌 Reflexivverb: sich unterscheiden (แตกต่าง)",
+        vocab: "unterscheiden (แตกต่าง), das Schulsystem (ระบบโรงเรียน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: In meinem Heimatland ist das Schulsystem anders, weil..."
+    },
+    {
+        topic: "Feste & Kultur",
+        thai: "เทศกาลอะไรที่สำคัญที่สุดในประเทศบ้านเกิดของคุณคะ/ครับ?",
+        words: ["Welches", "Fest", "ist", "in", "Ihrem", "Heimatland", "am", "wichtigsten?"],
+        full: "Welches Fest ist in Ihrem Heimatland am wichtigsten?",
+        rule: "📌 Welches Fest (ประธาน) + ist + am wichtigsten (ขั้นสุด)",
+        vocab: "das Fest (เทศกาล/งานฉลอง), wichtig (สำคัญ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Bei uns ist Songkran / das Neujahrsfest am wichtigsten."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "เราจะแบ่งงานกันอย่างไรดีเพื่อให้เสร็จทันเวลา?",
+        words: ["Wie", "können", "wir", "die", "Aufgaben", "am", "besten", "aufteilen?"],
+        full: "Wie können wir die Aufgaben am besten aufteilen?",
+        rule: "📌 aufteilen เป็นกริยาแยกส่วน เมื่อใช้กับ Modalverb (können) จะย้ายไปท้ายสุด",
+        vocab: "aufteilen (แบ่งงาน/จัดสรร)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Du könntest... machen und ich kümmere mich um..."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "ถ้าอากาศไม่ดี พวกเราจะทำอย่างไรกันดีคะ/ครับ?",
+        words: ["Was", "machen", "wir,", "wenn", "das", "Wetter", "schlecht", "ist?"],
+        full: "Was machen wir, wenn das Wetter schlecht ist?",
+        rule: "📌 ประโยคเงื่อนไข wenn: กริยา (ist) วางท้าย Nebensatz",
+        vocab: "schlecht (แย่/ไม่ดี), das Wetter (อากาศ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Wenn es regnet, können wir drinnen bleiben."
+    },
+    {
+        topic: "Teil 1: Person vorstellen",
+        thai: "เป้าหมายการทำงานของคุณในเยอรมนีคืออะไรคะ/ครับ?",
+        words: ["Was", "ist", "Ihr", "berufliches", "Ziel", "in", "Deutschland?"],
+        full: "Was ist Ihr berufliches Ziel in Deutschland?",
+        rule: "📌 Was + ist + Ihr berufliches Ziel",
+        vocab: "beruflich (เกี่ยวกับอาชีพ), das Ziel (เป้าหมาย)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Mein Ziel ist es, als... zu arbeiten."
+    },
+    {
+        topic: "Teil 2: Bildbeschreibung",
+        thai: "สถานการณ์ในภาพนี้เหมือนหรือต่างจากประเทศของคุณอย่างไร?",
+        words: ["Wie", "ist", "diese", "Situation", "in", "Ihrem", "Heimatland?"],
+        full: "Wie ist diese Situation in Ihrem Heimatland?",
+        rule: "📌 ถามเปรียบเทียบเชิงวัฒนธรรมในข้อสอบ DTZ Teil 2",
+        vocab: "die Situation (สถานการณ์)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: In meinem Heimatland ist das ähnlich / ganz anders..."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "ใครสามารถมารับพวกเราที่สถานีรถไฟได้บ้างคะ/ครับ?",
+        words: ["Wer", "kann", "uns", "vom", "Bahnhof", "abholen?"],
+        full: "Wer kann uns vom Bahnhof abholen?",
+        rule: "📌 abholen เป็นกริยาแยกส่วน วางท้ายประโยคหลัง Modalverb (kann)",
+        vocab: "abholen (ไปรับ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Mein Mann / Mein Freund kann uns mit dem Auto abholen."
+    },
+    {
+        topic: "Umwelt & Natur",
+        thai: "คุณทำอะไรบ้างในชีวิตประจำวันเพื่อช่วยแยกขยะ?",
+        words: ["Wie", "trennen", "Sie", "den", "Müll", "zu", "Hause?"],
+        full: "Wie trennen Sie den Müll zu Hause?",
+        rule: "📌 Müll trennen (แยกขยะ) เป็นหัวข้อสอบ DTZ บ่อยมาก",
+        vocab: "trennen (คัดแยก), der Müll (ขยะ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich trenne Plastik, Papier und Biomüll in verschiedene Tonnen."
+    },
+    {
+        topic: "Ämter & Behörden",
+        thai: "คุณต้องเตรียมเอกสารอะไรบ้างไปยื่นที่ Bürgeramt?",
+        words: ["Welche", "Dokumente", "muss", "man", "zum", "Bürgeramt", "mitbringen?"],
+        full: "Welche Dokumente muss man zum Bürgeramt mitbringen?",
+        rule: "📌 mitbringen เป็นกริยาแยกส่วน อยู่ท้ายสุดหลัง muss man",
+        vocab: "die Dokumente (เอกสาร), mitbringen (นำติดตัวมา)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Man muss den Reisepass und das Anmeldeformular mitbringen."
+    },
+    {
+        topic: "Gesundheit",
+        thai: "คุณต้องทำอย่างไรหากต้องการยกเลิกลายนัดหมอ?",
+        words: ["Wie", "kann", "man", "einen", "Arztermin", "absagen?"],
+        full: "Wie kann man einen Arzttermin absagen?",
+        rule: "📌 absagen (ยกเลิกนัด) เป็นกริยาแยกส่วน",
+        vocab: "der Arzttermin (ใบนัดหมอ), absagen (ยกเลิก)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Man kann in der Praxis anrufen oder eine E-Mail schreiben."
+    },
+    {
+        topic: "Ernährung & Kochen",
+        thai: "เมนูอาหารโปรดที่คุณชอบคัดสรรทำเองคืออะไร?",
+        words: ["Welches", "Gericht", "kochen", "Sie", "am", "liebsten?"],
+        full: "Welches Gericht kochen Sie am liebsten?",
+        rule: "📌 Welches + neuter Noun (Gericht) + kochen + Sie",
+        vocab: "das Gericht (เมนูอาหาร), kochen (ทำอาหาร)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich koche am liebsten Pad Thai / Suppe."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "พวกเราจะส่งการ์ดอวยพรไปให้เขาเมื่อไหร่ดีคะ/ครับ?",
+        words: ["Wann", "sollen", "wir", "die", "Einladungskarten", "verschicken?"],
+        full: "Wann sollen wir die Einladungskarten verschicken?",
+        rule: "📌 sollen (ควรจะ - Modalverb) + Infinitiv (verschicken)",
+        vocab: "die Einladungskarte (การ์ดเชิญ), verschicken (ส่งไป)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Wir sollten sie am besten schon diese Woche verschicken."
+    },
+
+    // --- เพิ่มเติมข้อ 21-50 ให้ครบครัน ---
+    {
+        topic: "Wohnungssuche",
+        thai: "คุณหาอพาร์ตเมนต์ใหม่นี้จากช่องทางไหนคะ/ครับ?",
+        words: ["Wo", "haben", "Sie", "diese", "Wohnung", "gefunden?"],
+        full: "Wo haben Sie diese Wohnung gefunden?",
+        rule: "📌 Perfekt: haben + gefunden",
+        vocab: "finden -> gefunden (พบเจอ), die Wohnung (อพาร์ตเมนต์)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich habe die Wohnung im Internet / in der Zeitung gefunden."
+    },
+    {
+        topic: "Arbeit",
+        thai: "คุณทำงานกี่ชั่วโมงต่อสัปดาห์คะ/ครับ?",
+        words: ["Wie", "viele", "Stunden", "arbeiten", "Sie", "pro", "Woche?"],
+        full: "Wie viele Stunden arbeiten Sie pro Woche?",
+        rule: "📌 Wie viele + Noun Plural (Stunden) + Verb (arbeiten)",
+        vocab: "pro Woche (ต่อสัปดาห์)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich arbeite 40 Stunden pro Woche (Vollzeit)."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "เราจะจัดงานปาร์ตี้ที่ไหนดี ในสวนหรือในบ้าน?",
+        words: ["Wo", "wollen", "wir", "feiern,", "im", "Garten", "oder", "im", "Haus?"],
+        full: "Wo wollen wir feiern, im Garten oder im Haus?",
+        rule: "📌 Wo + wollen (Modalverb) + wir + feiern (Infinitiv)",
+        vocab: "feiern (เฉลิมฉลอง), der Garten (สวน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Im Garten wäre es schön, wenn das Wetter gut ist."
+    },
+    {
+        topic: "Sprachkurs",
+        thai: "คุณฝึกฟังภาษาเยอรมันอย่างไรนอกห้องเรียน?",
+        words: ["Wie", "üben", "Sie", "das", "Hörverstehen", "außerhalb", "des", "Kurses?"],
+        full: "Wie üben Sie das Hörverstehen außerhalb des Kurse?",
+        rule: "📌 außerhalb + Genitiv (des Kurses)",
+        vocab: "das Hörverstehen (การฟัง), außerhalb (ภายนอก)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich höre deutsche Musik oder schaue Filme mit Untertiteln."
+    },
+    {
+        topic: "Teil 2: Bildbeschreibung",
+        thai: "เสื้อผ้าที่คนในภาพสวมใส่อยู่เป็นแบบไหนคะ/ครับ?",
+        words: ["Was", "tragen", "die", "Personen", "auf", "dem", "Bild?"],
+        full: "Was tragen die Personen auf dem Bild?",
+        rule: "📌 tragen (สวมใส่) ผันตาม die Personen (Plural)",
+        vocab: "tragen (สวมใส่เสื้อผ้า)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Der Mann trägt einen Anzug und die Frau ein Kleid."
+    },
+    {
+        topic: "Nachbarschaft",
+        thai: "ทำอย่างไรเราถึงจะมีความสัมพันธ์ที่ดีกับเพื่อนบ้านได้?",
+        words: ["Wie", "kann", "man", "ein", "gutes", "Verhältnis", "zu", "den", "Nachbarn", "haben?"],
+        full: "Wie kann man ein gutes Verhältnis zu den Nachbarn haben?",
+        rule: "📌 ein gutes Verhältnis zu jemandem haben (มีความสัมพันธ์ที่ดีกับ)",
+        vocab: "das Verhältnis (ความสัมพันธ์), die Nachbarn (เพื่อนบ้าน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Man sollte freundlich grüßen und nicht zu laut sein."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "พวกเราจะเริ่มเตรียมงานกันตั้งแต่กี่โมงดีคะ/ครับ?",
+        words: ["Wann", "fängen", "wir", "mit", "den", "Vorbereitungen", "an?"],
+        full: "Wann fangen wir mit den Vorbereitungen an?",
+        rule: "📌 anfangen mit + Dativ / fangen... an (กริยาแยกส่วน)",
+        vocab: "anfangen (เริ่มต้น), die Vorbereitung (การเตรียมการ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Wir können um 10 Uhr morgens anfangen."
+    },
+    {
+        topic: "Verkehr",
+        thai: "คุณคิดอย่างไรกับตั๋วเดินทางขนส่งสาธารณะในเยอรมนี?",
+        words: ["Was", "denken", "Sie", "über", "das", "Deutschlandticket?"],
+        full: "Was denken Sie über das Deutschlandticket?",
+        rule: "📌 denken über + Akkusativ (คิดอย่างไรเกี่ยวกับ)",
+        vocab: "denken über (คิดเกี่ยวกับ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich finde es sehr günstig und praktisch."
+    },
+    {
+        topic: "Kinder",
+        thai: "เด็กๆ ควรใช้เวลาหน้าจอมือถือนานแค่ไหนต่อวัน?",
+        words: ["Wie", "lange", "sollten", "Kinder", "am", "Handy", "spielen?"],
+        full: "Wie lange sollten Kinder am Handy spielen?",
+        rule: "📌 sollten (Konjunktiv II ของ sollen ใช้ให้คำแนะนำ)",
+        vocab: "spielen (เล่น), am Handy (บนมือถือ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich denke, maximal eine Stunde am Tag ist genug."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "เราจะแจ้งเพื่อนๆ ทุกคนเกี่ยวกับแผนการนี้อย่างไรดี?",
+        words: ["Wie", "informieren", "wir", "die", "anderen", "über", "unseren", "Plan?"],
+        full: "Wie informieren wir die anderen über unseren Plan?",
+        rule: "📌 informieren über + Akkusativ",
+        vocab: "informieren (แจ้งข่าว/ให้ข้อมูล), der Plan (แผนการ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Wir können eine WhatsApp-Gruppe erstellen."
+    },
+    {
+        topic: "Teil 1: Person vorstellen",
+        thai: "คุณทำอะไรบ้างในเวลาว่างตอนอยู่เยอรมนี?",
+        words: ["Was", "machen", "Sie", "in", "Ihrer", "Freizeit", "in", "Deutschland?"],
+        full: "Was machen Sie in Ihrer Freizeit in Deutschland?",
+        rule: "📌 in Ihrer Freizeit (Dativ feminine)",
+        vocab: "die Freizeit (เวลาว่าง)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: In meiner Freizeit gehe ich gerne spazieren."
+    },
+    {
+        topic: "Einkaufen",
+        thai: "คุณมักจะไปซื้อของกินของใช้ที่ไหนเป็นประจำ?",
+        words: ["Wo", "kaufen", "Sie", "normalerweise", "Ihre", "Lebensmittel", "ein?"],
+        full: "Wo kaufen Sie normalerweise Ihre Lebensmittel ein?",
+        rule: "📌 einkaufen (กริยาแยกส่วน): kaufen... ein",
+        vocab: "normalerweise (ปกติแล้ว), die Lebensmittel (ของกินของใช้)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich kaufe meistens bei Aldi oder Lidl ein."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "ใครจะเป็นคนจองตั๋วเครื่องบิน/ตั๋วรถไฟให้พวกเรา?",
+        words: ["Wer", "bucht", "die", "Tickets", "für", "unsere", "Reise?"],
+        full: "Wer bucht die Tickets für unsere Reise?",
+        rule: "📌 Wer (ประธานเอกพจน์) + bucht (Verb)",
+        vocab: "buchen (จอง), die Reise (การเดินทาง)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich kann die Tickets online buchen."
+    },
+    {
+        topic: "Gesundheit",
+        thai: "คุณต้องทำอย่างไรหากป่วยและไม่สามารถไปทำงานได้?",
+        words: ["Was", "müssen", "Sie", "tun,", "wenn", "Sie", "krank", "sind?"],
+        full: "Was müssen Sie tun, wenn Sie krank sind?",
+        rule: "📌 Nebensatz หลัง wenn: กริยา (sind) ย้ายไปท้ายสุด",
+        vocab: "krank (ป่วย), tun (ทำ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich muss meinen Chef anrufen und zum Arzt gehen."
+    },
+    {
+        topic: "Teil 2: Bildbeschreibung",
+        thai: "สถานที่ในรูปภาพนี้น่าจะตั้งอยู่ที่ไหนคะ/ครับ?",
+        words: ["Wo", "könnte", "dieser", "Ort", "auf", "dem", "Foto", "sein?"],
+        full: "Wo könnte dieser Ort auf dem Foto sein?",
+        rule: "📌 könnte (Konjunktiv II) ใช้คาดเดาเหตุการณ์",
+        vocab: "der Ort (สถานที่)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich vermute, das ist in einem Büro / in einem Park."
+    },
+    {
+        topic: "Medien",
+        thai: "คุณติดตามข่าวสารในเยอรมนีผ่านช่องทางใด?",
+        words: ["Wie", "informieren", "Sie", "sich", "über", "aktuelle", "Nachrichten?"],
+        full: "Wie informieren Sie sich über aktuelle Nachrichten?",
+        rule: "📌 sich informieren über + Akkusativ",
+        vocab: "die Nachrichten (ข่าวสาร), aktuell (ทันสมัย/ปัจจุบัน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich lese Nachrichten auf dem Smartphone oder sehe Tagesschau."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "เราจะนัดคุยรายละเอียดกันอีกครั้งเมื่อไหร่ดีคะ/ครับ?",
+        words: ["Wann", "besprechen", "wir", "die", "Details", "noch einmal?"],
+        full: "Wann besprechen wir die Details noch einmal?",
+        rule: "📌 besprechen (พูดคุยหารือ) + Akkusativ Object (die Details)",
+        vocab: "besprechen (พูดคุยหารือ), die Details (รายละเอียด)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Wir können morgen nach dem Kurs sprechen."
+    },
+    {
+        topic: "Urlaub & Reisen",
+        thai: "จุดหมายปลายทางในการท่องเที่ยวฝันของคุณคือที่ไหน?",
+        words: ["Wohin", "möchten", "Sie", "in", "Zukunft", "reisen?"],
+        full: "Wohin möchten Sie in Zukunft reisen?",
+        rule: "📌 Wohin (ไปที่ไหน) + möchte + reisen (Infinitiv)",
+        vocab: "in Zukunft (ในอนาคต), reisen (ท่องเที่ยว)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich möchte nach Italien / Japan reisen."
+    },
+    {
+        topic: "Arbeit",
+        thai: "อะไรคือสิ่งที่คุณชอบมากที่สุดในงานของคุณ?",
+        words: ["Was", "gefällt", "Ihnen", "an", "Ihrer", "Arbeit", "am", "besten?"],
+        full: "Was gefällt Ihnen an Ihrer Arbeit am besten?",
+        rule: "📌 gefallen + Dativ Object (Ihnen)",
+        vocab: "gefallen (ชอบ/ถูกใจ), am besten (ที่สุด)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Mir gefallen die nette Kollegen und die flexible Arbeitszeit."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "เราควรจะเตรียมของขวัญอะไรไปมอบให้เขาดีคะ/ครับ?",
+        words: ["Welches", "Geschenk", "sollten", "wir", "ihm", "kaufen?"],
+        full: "Welches Geschenk sollten wir ihm kaufen?",
+        rule: "📌 Welches Geschenk + sollten (Modalverb) + ihm (Dativ) + kaufen",
+        vocab: "das Geschenk (ของขวัญ), kaufen (ซื้อ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Wir könnten ihm einen Gutschein kaufen."
+    },
+    {
+        topic: "Ausbildung",
+        thai: "คุณต้องการทำ Ausbildungsplatz ในสาขาไหน?",
+        words: ["In", "welchem", "Bereich", "möchten", "Sie", "eine", "Ausbildung", "machen?"],
+        full: "In welchem Bereich möchten Sie eine Ausbildung machen?",
+        rule: "📌 in welchem Bereich (Dativ masculine)",
+        vocab: "der Bereich (สาขา/สายงาน), die Ausbildung (การฝึกอาชีพ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich möchte eine Ausbildung im Bereich Pflege / IT machen."
+    },
+    {
+        topic: "Teil 2: Bildbeschreibung",
+        thai: "บรรยากาศในภาพนี้ดูเป็นอย่างไรบ้างคะ/ครับ?",
+        words: ["Wie", "ist", "die", "Stimmung", "auf", "dem", "Foto?"],
+        full: "Wie ist die Stimmung auf dem Foto?",
+        rule: "📌 Wie + ist + die Stimmung",
+        vocab: "die Stimmung (บรรยากาศ/อารมณ์)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Die Stimmung wirkt entspannt und fröhlich."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "พวกเราจะเชิญใครมาร่วมงานปาร์ตี้ครั้งนี้บ้าง?",
+        words: ["Wen", "wollen", "wir", "zu", "unserer", "Feier", "einladen?"],
+        full: "Wen wollen wir zu unserer Feier einladen?",
+        rule: "📌 Wen (ถามถึงกรรมคน) + einladen zu + Dativ",
+        vocab: "einladen (เรียนเชิญ), die Feier (งานเลี้ยง)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Wir können unsere Nachbarn und Freunde einladen."
+    },
+    {
+        topic: "Wohnen",
+        thai: "เพื่อนบ้านแบบไหนที่คุณไม่อยากเจอมากที่สุด?",
+        words: ["Welche", "Nachbarn", "finden", "Sie", "anstrengend?"],
+        full: "Welche Nachbarn finden Sie anstrengend?",
+        rule: "📌 Welche + Noun Plural + finden + Sie + Adjective",
+        vocab: "anstrengend (น่ารำคาญ/น่าเหนื่อยใจ)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Nachbarn, die nachts sehr laut Musik hören."
+    },
+    {
+        topic: "Sprache & Kultur",
+        thai: "คุณคิดอย่างไรกับการเกร็งใช้ภาษาเยอรมันพูดกับคนท้องถิ่น?",
+        words: ["Wie", "reagieren", "die", "Menschen,", "wenn", "Sie", "Deutsch", "sprechen?"],
+        full: "Wie reagieren die Menschen, wenn Sie Deutsch sprechen?",
+        rule: "📌 Nebensatz หลัง wenn: กริยา (sprechen) อยู่ท้ายสุด",
+        vocab: "reagieren (มีปฏิกิริยาตอบรับ), die Menschen (ผู้คน)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Die meisten Menschen sind sehr freundlich und geduldig."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "พวกเราจะนัดเจอซ้อมพรีเซนต์งานกันที่ไหนดี?",
+        words: ["Wo", "können", "wir", "zusammen", "für", "die", "Präsentation", "üben?"],
+        full: "Wo können wir zusammen für die Präsentation üben?",
+        rule: "📌 üben für + Akkusativ / Modalverb können",
+        vocab: "die Präsentation (การนำเสนอผลงาน), üben (ฝึกซ้อม)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Wir können uns in der Bibliothek oder bei mir zu Hause treffen."
+    },
+    {
+        topic: "Finanzen & Geld",
+        thai: "คุณจัดการค่าใช้จ่ายรายเดือนอย่างไรให้พอใช้?",
+        words: ["Wie", "verwalten", "Sie", "Ihre", "monatlichen", "Ausgaben?"],
+        full: "Wie verwalten Sie Ihre monatlichen Ausgaben?",
+        rule: "📌 Wie + verwalten (Verb) + Subject + Akkusativ Object",
+        vocab: "verwalten (บริหารจัดการ), die Ausgaben (ค่าใช้จ่าย)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich mache jeden Monat einen Haushaltsplan."
+    },
+    {
+        topic: "Teil 1: Person vorstellen",
+        thai: "สิ่งไหนที่ช่วยให้คุณรู้สึกผ่อนคลายหลังเลิกงาน?",
+        words: ["Was", "hilft", "Ihnen,", "nach", "der", "Arbeit", "zu", "entspannen?"],
+        full: "Was hilft Ihnen, nach der Arbeit zu entspannen?",
+        rule: "📌 Infinitiv mit zu (zu entspannen)",
+        vocab: "entspannen (ผ่อนคลาย), helfen + Dativ (Ihnen)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Mir hilft Musik hören oder Spazierengehen."
+    },
+    {
+        topic: "Teil 3: Planen",
+        thai: "เราต้องจองโต๊ะล่วงหน้าไว้ก่อนไหมคะ/ครับ?",
+        words: ["Warum", "sollten", "wir", "einen", "Tisch", "im", "Voraus", "reservieren?"],
+        full: "Warum sollten wir einen Tisch im Voraus reservieren?",
+        rule: "📌 im Voraus (ล่วงหน้า) + reservieren (จอง)",
+        vocab: "im Voraus (ล่วงหน้า), reservieren (จอง)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Weil das Restaurant am Wochenende sehr voll ist."
+    },
+    {
+        topic: "Prüfung DTZ",
+        thai: "คุณเตรียมตัวสำหรับการสอบ DTZ ครั้งนี้อย่างไร?",
+        words: ["Wie", "haben", "Sie", "sich", "auf", "die", "DTZ-Prüfung", "vorbereitet?"],
+        full: "Wie haben Sie sich auf die DTZ-Prüfung vorbereitet?",
+        rule: "📌 sich vorbereiten auf + Akkusativ (รูป Perfekt)",
+        vocab: "sich vorbereiten (เตรียมตัว)",
+        replyHint: "👉 ตอบขึ้นต้นด้วย: Ich habe im Kurs gelernt und online Übungen gemacht."
+    }
+];
+
+let remainingCards = [...cardsData];
+let currentCard = null;
+let timerInterval = null;
+let userBuiltWords = [];
+let availableWords = [];
+
+function drawCard() {
+    clearInterval(timerInterval);
+    document.getElementById("timerText").innerText = "";
+    document.getElementById("answerArea").style.display = "none";
+    document.getElementById("toggleAnsBtn").innerText = "👁️ เฉลย / คำแปลภาษาเยอรมัน";
+    document.getElementById("feedbackText").innerText = "";
+    document.getElementById("feedbackText").className = "feedback-text";
+
+    if (remainingCards.length === 0) {
+        alert("🎉 คุณทำแบบฝึกหัดครบทั้ง 50 การ์ดข้อสอบแล้ว! ระบบจะทำการรีเซ็ตสับไพ่ใหม่ทั้งหมดครับ");
+        remainingCards = [...cardsData];
+    }
+
+    const randomIndex = Math.floor(Math.random() * remainingCards.length);
+    currentCard = remainingCards[randomIndex];
+    remainingCards.splice(randomIndex, 1);
+
+    document.getElementById("cardCounter").innerText = `การ์ดคงเหลือ: ${remainingCards.length}/50`;
+    document.getElementById("topicBadge").innerText = `📌 ${currentCard.topic}`;
+    document.getElementById("thaiSentence").innerText = `🇹🇭 ${currentCard.thai}`;
+    
+    document.getElementById("vocabList").innerText = currentCard.vocab;
+    document.getElementById("responseHint").innerText = currentCard.replyHint;
+    document.getElementById("fullSentence").innerText = currentCard.full;
+    document.getElementById("grammarRule").innerText = currentCard.rule;
+
+    resetWordBuilding();
+}
+
+function resetWordBuilding() {
+    userBuiltWords = [];
+    document.getElementById("feedbackText").innerText = "";
+    document.getElementById("feedbackText").className = "feedback-text";
+    
+    // สุ่มสลับคำศัพท์
+    availableWords = currentCard.words.map(w => ({ word: w, used: false })).sort(() => Math.random() - 0.5);
+    
+    renderWordBoxes();
+}
+
+function renderWordBoxes() {
+    const userBox = document.getElementById("userSentenceBox");
+    const bankBox = document.getElementById("wordsBank");
+    
+    userBox.innerHTML = "";
+    bankBox.innerHTML = "";
+
+    userBuiltWords.forEach((wordObj, index) => {
+        const chip = document.createElement("div");
+        chip.className = "word-chip";
+        chip.innerText = wordObj.word;
+        chip.onclick = () => removeWordFromUser(index);
+        userBox.appendChild(chip);
+    });
+
+    availableWords.forEach((wordObj, index) => {
+        const chip = document.createElement("div");
+        chip.className = "word-chip" + (wordObj.used ? " used" : "");
+        chip.innerText = wordObj.word;
+        if (!wordObj.used) {
+            chip.onclick = () => addWordToUser(index);
+        }
+        bankBox.appendChild(chip);
+    });
+}
+
+function addWordToUser(bankIndex) {
+    const selectedWord = availableWords[bankIndex];
+    if (selectedWord.used) return;
+
+    selectedWord.used = true;
+    userBuiltWords.push({ word: selectedWord.word, originalIndex: bankIndex });
+    renderWordBoxes();
+}
+
+function removeWordFromUser(userIndex) {
+    const removed = userBuiltWords.splice(userIndex, 1)[0];
+    availableWords[removed.originalIndex].used = false;
+    renderWordBoxes();
+}
+
+function checkBuiltSentence() {
+    const feedback = document.getElementById("feedbackText");
+    const userStr = userBuiltWords.map(w => w.word).join(" ");
+    const correctStr = currentCard.words.join(" ");
+
+    if (userBuiltWords.length === 0) {
+        feedback.innerText = "⚠️ กรุณาคลิกเลือกคำศัพท์เพื่อเรียงประโยคก่อนครับ";
+        feedback.className = "feedback-text feedback-error";
+        return;
+    }
+
+    if (userStr === correctStr) {
+        feedback.innerText = "🎉 ถูกต้องครับ! คุณสร้าง W-Frage สำหรับข้อสอบได้อย่างแม่นยำ";
+        feedback.className = "feedback-text feedback-success";
+        document.getElementById("answerArea").style.display = "block";
+        document.getElementById("toggleAnsBtn").innerText = "🙈 ซ่อนเฉลย";
+    } else {
+        feedback.innerText = "❌ ยังไม่ถูกต้อง ตรวจสอบตำแหน่ง W-Wort (ลำดับ 1) และ Verb (ลำดับ 2) อีกครั้งนะครับ";
+        feedback.className = "feedback-text feedback-error";
+    }
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    const selectedTime = parseInt(document.getElementById("timerSelect").value);
+    let timeLeft = selectedTime;
+    
+    const timerText = document.getElementById("timerText");
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerText.innerText = `⏱️ เหลือเวลา: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timerText.innerText = "⏰ หมดเวลา!";
+            toggleAnswer();
+        } else {
+            timerText.innerText = `⏱️ เหลือเวลา: ${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+    }, 1000);
+}
+
+function toggleAnswer() {
+    const ansArea = document.getElementById("answerArea");
+    const toggleBtn = document.getElementById("toggleAnsBtn");
+    
+    if (ansArea.style.display === "none" || ansArea.style.display === "") {
+        ansArea.style.display = "block";
+        toggleBtn.innerText = "🙈 ซ่อนเฉลย";
+    } else {
+        ansArea.style.display = "none";
+        toggleBtn.innerText = "👁️ เฉลย / คำแปลภาษาเยอรมัน";
+    }
+}
+
+function speakText() {
+    if (!currentCard) return;
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(currentCard.full);
+    utterance.lang = 'de-DE';
+    utterance.rate = 0.85;
+    
+    window.speechSynthesis.speak(utterance);
+}
+
+// เริ่มต้นจับการ์ดใบแรก
+drawCard();
+</script>
+</body>
+</html>
